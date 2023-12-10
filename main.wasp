@@ -1,0 +1,57 @@
+app RentVEt {
+  wasp: {
+    version: "^0.11.4"
+  },
+  title: "RentVEt",
+  client: {
+    rootComponent: import { Layout } from "@client/Layout.jsx",
+  },
+  db: {
+    prisma: {
+      clientPreviewFeatures: ["extendedWhereUnique"]
+    }
+  },
+  auth: {
+    userEntity: User,
+    methods: {
+      usernameAndPassword: {}
+    },
+    onAuthFailedRedirectTo: "/login",
+    onAuthSucceededRedirectTo: "/"
+  },
+}
+
+route LoginRoute { path: "/login", to: LoginPage }
+page LoginPage {
+  component: import Login from "@client/pages/auth/Login.jsx"
+}
+route SignupRoute { path: "/signup", to: SignupPage }
+page SignupPage {
+  component: import Signup from "@client/pages/auth/Signup.jsx"
+}
+
+entity User {=psl
+    id             Int             @id @default(autoincrement())
+    username       String          @unique
+    password       String
+    properties     Property[]
+    defaultReports DefaultReport[]
+psl=}
+
+entity Property {=psl
+    id             Int             @id @default(autoincrement())
+    address        String
+    user           User            @relation(fields: [userId], references: [id])
+    userId         Int
+    defaultReports DefaultReport[]
+psl=}
+
+entity DefaultReport {=psl
+    id              Int      @id @default(autoincrement())
+    tenantName      String
+    amountDefaulted Int
+    property        Property @relation(fields: [propertyId], references: [id])
+    propertyId      Int
+    reporter        User     @relation(fields: [userId], references: [id])
+    userId          Int
+psl=}
